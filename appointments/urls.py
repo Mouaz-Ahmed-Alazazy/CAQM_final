@@ -1,0 +1,14 @@
+"""
+URL configuration for the appointments app.
+Only contains shared URLs like available-slots.
+Patient and Doctor URLs have been moved to their respective apps.
+"""
+from django.urls import path
+from .views import GetAvailableSlotsView
+
+app_name = 'appointments'
+
+urlpatterns = [
+    # Shared AJAX endpoint for available slots
+    path('available-slots/', GetAvailableSlotsView.as_view(), name='get_available_slots'),
+]
