@@ -67,6 +67,11 @@ class TestAppointmentServiceExceptions:
         """Test booking with past date triggers ValidationError"""
         past_date = timezone.now().date() - timedelta(days=1)
         past_day_of_week = past_date.strftime('%A').upper()
+
+        DoctorAvailability.objects.filter(
+            doctor=doctor,
+            day_of_week=past_day_of_week
+        ).delete()
         
         # Create availability for that day
         DoctorAvailability.objects.create(

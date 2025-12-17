@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 from .models import DoctorAvailability
 from .services import AppointmentService
+from .config import ClinicConfig
 
 
 class GetAvailableSlotsView(LoginRequiredMixin, View):
@@ -45,7 +46,7 @@ class GetAvailableSlotsView(LoginRequiredMixin, View):
                 is_active=True
             ).first()
             
-            slot_duration = availability.slot_duration if availability else 30
+            slot_duration = availability.slot_duration if availability else ClinicConfig().default_slot_duration
             
             slots_data = []
             for slot in available_slots:

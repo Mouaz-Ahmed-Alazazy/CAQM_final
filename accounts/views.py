@@ -90,15 +90,15 @@ class PatientRegistrationView(CreateView):
     model = User
     form_class = PatientRegistrationForm
     template_name = 'accounts/patient_register.html'
-    success_url = reverse_lazy('appointments:book_appointment')
+    success_url = reverse_lazy('patients:book_appointment')
     
     def dispatch(self, request, *args, **kwargs):
         # Redirect authenticated users
         if request.user.is_authenticated:
             if request.user.is_patient():
-                return redirect('appointments:my_appointments')
+                return redirect('patients:book_appointment')
             elif request.user.is_doctor():
-                return redirect('appointments:doctor_dashboard')
+                return redirect('doctors:doctor_dashboard')
         return super().dispatch(request, *args, **kwargs)
     
     def form_valid(self, form):

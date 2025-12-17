@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 from .models import Appointment, DoctorAvailability
+from .factories import AppointmentFactory
+from .config import ClinicConfig
 from doctors.models import Doctor
 from patients.models import Patient
 import logging
@@ -50,33 +52,18 @@ class AppointmentService:
         Returns: Tuple (success: bool, appointment_or_error: Appointment/str)
         """
         try:
-            # Calculate end time based on slot duration
-            day_of_week = appointment_date.strftime('%A').upper()
-            availability = DoctorAvailability.objects.filter(
-                doctor=doctor,
-                day_of_week=day_of_week,
-                is_active=True
-            ).first()
-            
-            if not availability:
-                return False, 'Doctor is not available on this day'
-            
-            start_datetime = datetime.combine(appointment_date, start_time)
-            end_datetime = start_datetime + timedelta(minutes=availability.slot_duration)
-            end_time = end_datetime.time()
-            
-            # Create appointment
-            appointment = Appointment(
-                patient=patient,
-                doctor=doctor,
-                appointment_date=appointment_date,
-                start_time=start_time,
-                end_time=end_time,
-                notes=notes,
-                status='SCHEDULED'
-            )
-            
-            appointment.save()
+            # Create appointment using Factory
+            try:
+                appointment = AppointmentFactory.create_appointment(
+                    patient=patient,
+                    doctor=doctor,
+                    appointment_date=appointment_date,
+                    start_time=start_time,
+                    notes=notes
+                )
+                appointment.save()
+            except ValueError as e:
+                return False, str(e)
             
             return True, appointment
             
