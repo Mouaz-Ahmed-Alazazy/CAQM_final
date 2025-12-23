@@ -20,12 +20,6 @@ class NurseService:
     def get_assigned_doctor_queue(nurse):
         """
         Get the current day's queue for the nurse's assigned doctor.
-        
-        Args:
-            nurse: Nurse instance
-        
-        Returns:
-            Queue or None: The queue for today, or None if no assigned doctor
         """
         if not nurse.assigned_doctor:
             return None
@@ -41,12 +35,6 @@ class NurseService:
     def get_queue_patients(queue):
         """
         Get all patients in a queue, sorted by position.
-        
-        Args:
-            queue: Queue instance
-        
-        Returns:
-            QuerySet: PatientQueue entries
         """
         if not queue:
             return PatientQueue.objects.none()
@@ -57,12 +45,6 @@ class NurseService:
     def get_waiting_patients(queue):
         """
         Get patients currently waiting in the queue.
-        
-        Args:
-            queue: Queue instance
-        
-        Returns:
-            QuerySet: Waiting PatientQueue entries
         """
         if not queue:
             return PatientQueue.objects.none()
@@ -73,12 +55,6 @@ class NurseService:
     def get_current_patient(queue):
         """
         Get the patient currently in consultation.
-        
-        Args:
-            queue: Queue instance
-        
-        Returns:
-            PatientQueue or None
         """
         if not queue:
             return None
@@ -90,12 +66,6 @@ class NurseService:
     def call_next_patient(queue):
         """
         Call the next patient from the queue to start consultation.
-        
-        Args:
-            queue: Queue instance
-        
-        Returns:
-            tuple: (success, patient_queue or error message)
         """
         if not queue:
             return False, "No queue available"
@@ -126,12 +96,6 @@ class NurseService:
     def start_consultation(patient_queue_id):
         """
         Start consultation for a specific patient.
-        
-        Args:
-            patient_queue_id: PatientQueue ID
-        
-        Returns:
-            tuple: (success, patient_queue or error message)
         """
         try:
             patient_queue = PatientQueue.objects.get(pk=patient_queue_id)
@@ -170,12 +134,6 @@ class NurseService:
     def end_consultation(patient_queue_id):
         """
         End consultation for a specific patient.
-        
-        Args:
-            patient_queue_id: PatientQueue ID
-        
-        Returns:
-            tuple: (success, patient_queue or error message)
         """
         try:
             patient_queue = PatientQueue.objects.get(pk=patient_queue_id)
@@ -214,12 +172,6 @@ class NurseService:
     def mark_no_show(patient_queue_id):
         """
         Mark a patient as no-show.
-        
-        Args:
-            patient_queue_id: PatientQueue ID
-        
-        Returns:
-            tuple: (success, patient_queue or error message)
         """
         try:
             patient_queue = PatientQueue.objects.get(pk=patient_queue_id)
@@ -256,12 +208,6 @@ class NurseService:
     def get_queue_statistics(queue):
         """
         Get statistics for a queue.
-        
-        Args:
-            queue: Queue instance
-        
-        Returns:
-            dict: Queue statistics
         """
         if not queue:
             return {

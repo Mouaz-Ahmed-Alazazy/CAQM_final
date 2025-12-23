@@ -21,13 +21,6 @@ class AppointmentService:
     def get_available_slots(doctor_id, date):
         """
         Get available time slots for a doctor on a specific date.
-        
-        Args:
-            doctor_id: ID of the doctor
-            date: Date object or date string
-            
-        Returns:
-            List of available time slots
         """
         try:
             doctor = Doctor.objects.get(pk=doctor_id)
@@ -49,7 +42,6 @@ class AppointmentService:
     def book_appointment(patient, doctor, appointment_date, start_time, notes=''):
         """
         Book an appointment (with atomic transaction).
-        Returns: Tuple (success: bool, appointment_or_error: Appointment/str)
         """
         try:
             # Create appointment using Factory
@@ -78,8 +70,6 @@ class AppointmentService:
     def cancel_appointment(appointment_id, patient):
         """
         Cancel an appointment.
-        Returns:
-            Tuple (success: bool, message: str)
         """
         try:
             appointment = Appointment.objects.get(
@@ -102,8 +92,6 @@ class AppointmentService:
     def modify_appointment(appointment_id, patient, new_date=None, new_time=None, notes=None):
         """
         Modify an existing appointment.
-        Returns:
-            Tuple (success: bool, appointment_or_error: Appointment/str)
         """
         try:
             appointment = Appointment.objects.get(
@@ -151,8 +139,6 @@ class AppointmentService:
     def get_appointments_by_doctor(doctor, status=None, start_date=None, end_date=None):
         """
         Get appointments for a doctor with optional filtering.
-        Returns:
-            QuerySet of Appointment objects
         """
         try:
             queryset = Appointment.objects.filter(doctor=doctor)
@@ -173,8 +159,6 @@ class AppointmentService:
     def get_patient_appointments(patient, status=None):
         """
         Get appointments for a patient.
-        Returns:
-            QuerySet of Appointment objects
         """
         try:
             queryset = Appointment.objects.filter(patient=patient)
@@ -199,8 +183,6 @@ class ScheduleService:
     def update_schedule(doctor, schedule_data):
         """
         Update doctor's schedule (clear old slots and create new ones).
-        Returns:
-            Tuple (success: bool, message: str)
         """
         try:
             # Clear old slots for the days being updated
@@ -233,8 +215,6 @@ class ScheduleService:
     def get_doctor_schedule(doctor):
         """
         Get doctor's current schedule.
-        Returns:
-            QuerySet of DoctorAvailability objects
         """
         try:
             return DoctorAvailability.objects.filter(doctor=doctor).order_by('day_of_week')

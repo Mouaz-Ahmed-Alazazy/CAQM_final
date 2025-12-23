@@ -69,19 +69,11 @@ class Queue(models.Model):
         return self.patient_queues.count() == 0
     
     def get_estimated_wait_time(self, position):
-        # Simple estimation: position * average_consultation_time (e.g., 30 mins)
-        # This can be refined based on actual data
         return position * 30
     
     def enqueue(self, patient_id):
         """
         Add a patient to the queue.
-        
-        Args:
-            patient_id: Patient instance or patient primary key
-        
-        Returns:
-            PatientQueue: The created queue entry
         """
         from patients.models import Patient
         
@@ -101,9 +93,6 @@ class Queue(models.Model):
     def dequeue(self):
         """
         Remove and return the next patient from the queue (FIFO).
-        
-        Returns:
-            PatientQueue or None: The next patient queue entry
         """
         next_patient = self.patient_queues.filter(
             status='WAITING'
@@ -118,21 +107,12 @@ class Queue(models.Model):
     def validate_qrcode(self, code):
         """
         Validate if a QR code matches this queue.
-        
-        Args:
-            code (str): QR code string to validate
-        
-        Returns:
-            bool: True if valid, False otherwise
         """
         return self.qrcode == code
     
     def get_qrcode_image(self):
         """
         Get the QR code image URL.
-        
-        Returns:
-            str: URL to QR code image or empty string
         """
         if self.qrcode_image:
             return self.qrcode_image.url
@@ -188,9 +168,6 @@ class PatientQueue(models.Model):
     def update_status(self, new_status=None):
         """
         Update the patient's queue status.
-        
-        Args:
-            new_status (str): New status value (optional, defaults to next logical status)
         """
         if new_status:
             self.status = new_status
@@ -206,9 +183,6 @@ class PatientQueue(models.Model):
     def get_wait_time(self):
         """
         Calculate current wait time based on check-in time.
-        
-        Returns:
-            int: Wait time in minutes
         """
         from django.utils import timezone
         from datetime import datetime
@@ -258,9 +232,6 @@ class PatientQueue(models.Model):
     def update_position(self, new_position):
         """
         Update patient's position in the queue.
-        
-        Args:
-            new_position (int): New position number
         """
         old_position = self.position
         self.position = new_position

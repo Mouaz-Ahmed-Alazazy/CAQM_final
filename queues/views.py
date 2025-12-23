@@ -32,7 +32,6 @@ class QRScannerView(LoginRequiredMixin, TemplateView):
 class ProcessCheckInView(LoginRequiredMixin, View):
     """
     Process check-in after QR code is scanned.
-    Accepts POST request with QR code data.
     """
     
     def post(self, request, *args, **kwargs):
