@@ -54,6 +54,31 @@ class CheckInService:
                 status='SCHEDULED'
             )
             return appointment
+        except Appointment.DoesNotExist:
+            logger.warning(f"No scheduled appointment found for patient {patient.pk} with doctor {doctor.pk} on {date}")
+            return None
+        except Appointment.MultipleObjectsReturned:
+            logger.error(f"Multiple appointments found for patient {patient.pk} with doctor {doctor.pk} on {date}")
+            return Appointment.objects.filter(
+                patient=patient,
+                doctor=doctor,
+                appointment_date=date,
+                status='SCHEDULED'
+            ).first()
+    
+    @staticmethod
+    def verify_doctor_consultation(doctor, date):
+        """
+        Verify that the doctor has scheduled consultations (appointments) on the given date.
+        """
+        try:
+            appointment = Appointment.objects.get(
+                patient=patient,
+                doctor=doctor,
+                appointment_date=date,
+                status='SCHEDULED'
+            )
+            return appointment
             
         except Appointment.DoesNotExist:
             logger.warning(f"No scheduled appointment found for patient {patient.pk} with doctor {doctor.pk} on {date}")
@@ -71,7 +96,7 @@ class CheckInService:
     @staticmethod
     def verify_doctor_consultation(doctor, date):
         """
-        Verify that the doctor has scheduled consultations (appointments) on the given date.
+        Verify that the doctor has scheduled consultations (appointments) on the given date.    
         """
         has_consultations = Appointment.objects.filter(
             doctor=doctor,
@@ -152,6 +177,7 @@ class CheckInService:
     def process_check_in(user, qr_data):
         """
         Main entry point for processing check-in from QR code.
+        Determines user type (patient/doctor) and calls appropriate method.
         """
         # Parse QR code
         doctor_id, date = CheckInService.parse_qr_code(qr_data)

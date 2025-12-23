@@ -3,8 +3,8 @@ from django.views.generic import CreateView, ListView, View
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.urls import reverse_lazy
-from .admin_services import AdminService
-from .models import User
+from .services import AdminService
+from accounts.models import User
 from datetime import datetime
 
 
@@ -23,7 +23,7 @@ class AdminUserRegistrationView(LoginRequiredMixin, AdminRequiredMixin, View):
     """
     Admin can register new users (Patient, Doctor, Admin).
     """
-    template_name = 'accounts/admin_register_user.html'
+    template_name = 'admins/admin_register_user.html'
     
     def get(self, request):
         return render(request, self.template_name)
@@ -61,7 +61,7 @@ class AdminUserRegistrationView(LoginRequiredMixin, AdminRequiredMixin, View):
             
             if success:
                 messages.success(request, f'User {email} registered successfully')
-                return redirect('accounts:admin_user_list')
+                return redirect('admins:admin_user_list')
             else:
                 messages.error(request, result)
                 return render(request, self.template_name)
@@ -76,7 +76,7 @@ class AdminUserListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
     List all users with filtering by role.
     """
     model = User
-    template_name = 'accounts/admin_user_list.html'
+    template_name = 'admins/admin_user_list.html'
     context_object_name = 'users'
     paginate_by = 20
     
@@ -105,4 +105,4 @@ class AdminDeleteUserView(LoginRequiredMixin, AdminRequiredMixin, View):
         except Exception as e:
             messages.error(request, f'Error deleting user: {str(e)}')
         
-        return redirect('accounts:admin_user_list')
+        return redirect('admins:admin_user_list')

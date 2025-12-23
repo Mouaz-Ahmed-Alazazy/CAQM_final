@@ -8,7 +8,7 @@
     <div class="card">
         <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
             <h4><i class="bi bi-people"></i> User Management</h4>
-            <a href="{% url 'accounts:admin_register_user' %}" class="btn btn-light">
+            <a href="{% url 'admins:admin_register_user' %}" class="btn btn-light">
                 <i class="bi bi-person-plus"></i> Register New User
             </a>
         </div>
@@ -54,7 +54,7 @@
                             </td>
                             <td>{{ user.date_joined|date:'Y-m-d' }}</td>
                             <td>
-                                <form method="post" action="{% url 'accounts:admin_delete_user' user.id %}"
+                                <form method="post" action="{% url 'admins:admin_delete_user' user.id %}"
                                     style="display: inline;"
                                     onsubmit="return confirm('Are you sure you want to delete {{ user.get_full_name }}?');">
                                     {% csrf_token %}
