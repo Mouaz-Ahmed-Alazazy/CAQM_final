@@ -4,7 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 from .models import Appointment, DoctorAvailability
 
-from .config import ClinicConfig
+from .config import SingletonConfig
 from doctors.models import Doctor
 from patients.models import Patient
 import logging
