@@ -1,6 +1,3 @@
-"""
-URL configuration for the patients app.
-"""
 from django.urls import path
 from . import views
 

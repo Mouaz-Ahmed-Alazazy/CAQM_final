@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 from .models import Appointment, DoctorAvailability
-from .factories import AppointmentFactory
+
 from .config import ClinicConfig
 from doctors.models import Doctor
 from patients.models import Patient
@@ -21,13 +21,6 @@ class AppointmentService:
     def get_available_slots(doctor_id, date):
         """
         Get available time slots for a doctor on a specific date.
-        
-        Args:
-            doctor_id: ID of the doctor
-            date: Date object or date string
-            
-        Returns:
-            List of available time slots
         """
         try:
             doctor = Doctor.objects.get(pk=doctor_id)
@@ -49,12 +42,12 @@ class AppointmentService:
     def book_appointment(patient, doctor, appointment_date, start_time, notes=''):
         """
         Book an appointment (with atomic transaction).
-        Returns: Tuple (success: bool, appointment_or_error: Appointment/str)
         """
         try:
             # Create appointment using Factory
+            # Create appointment instance
             try:
-                appointment = AppointmentFactory.create_appointment(
+                appointment = AppointmentService.create_appointment_instance(
                     patient=patient,
                     doctor=doctor,
                     appointment_date=appointment_date,
@@ -78,8 +71,6 @@ class AppointmentService:
     def cancel_appointment(appointment_id, patient):
         """
         Cancel an appointment.
-        Returns:
-            Tuple (success: bool, message: str)
         """
         try:
             appointment = Appointment.objects.get(
@@ -102,8 +93,6 @@ class AppointmentService:
     def modify_appointment(appointment_id, patient, new_date=None, new_time=None, notes=None):
         """
         Modify an existing appointment.
-        Returns:
-            Tuple (success: bool, appointment_or_error: Appointment/str)
         """
         try:
             appointment = Appointment.objects.get(
@@ -151,8 +140,6 @@ class AppointmentService:
     def get_appointments_by_doctor(doctor, status=None, start_date=None, end_date=None):
         """
         Get appointments for a doctor with optional filtering.
-        Returns:
-            QuerySet of Appointment objects
         """
         try:
             queryset = Appointment.objects.filter(doctor=doctor)
@@ -173,8 +160,6 @@ class AppointmentService:
     def get_patient_appointments(patient, status=None):
         """
         Get appointments for a patient.
-        Returns:
-            QuerySet of Appointment objects
         """
         try:
             queryset = Appointment.objects.filter(patient=patient)
@@ -184,8 +169,40 @@ class AppointmentService:
             
             return queryset.order_by('-appointment_date', '-start_time')
         except Exception as e:
-            logger.error(f"Error getting appointments for patient {patient.pk}: {e}")
+            logger.error(f"Error getting patient appointments: {e}")
             return Appointment.objects.none()
+
+    @staticmethod
+    def create_appointment_instance(patient, doctor, appointment_date, start_time, notes=''):
+        """
+        Create and return an Appointment instance (unsaved).
+        validates availability and calculates end time.
+        """
+        # Calculate end time based on slot duration
+        day_of_week = appointment_date.strftime('%A').upper()
+        availability = DoctorAvailability.objects.filter(
+            doctor=doctor,
+            day_of_week=day_of_week,
+            is_active=True
+        ).first()
+        
+        if not availability:
+            raise ValueError('Doctor is not available on this day')
+        
+        start_datetime = datetime.combine(appointment_date, start_time)
+        end_datetime = start_datetime + timedelta(minutes=availability.slot_duration)
+        end_time = end_datetime.time()
+        
+        # Create appointment instance
+        return Appointment(
+            patient=patient,
+            doctor=doctor,
+            appointment_date=appointment_date,
+            start_time=start_time,
+            end_time=end_time,
+            notes=notes,
+            status='SCHEDULED'
+        )
 
 
 
@@ -199,8 +216,6 @@ class ScheduleService:
     def update_schedule(doctor, schedule_data):
         """
         Update doctor's schedule (clear old slots and create new ones).
-        Returns:
-            Tuple (success: bool, message: str)
         """
         try:
             # Clear old slots for the days being updated
@@ -233,8 +248,6 @@ class ScheduleService:
     def get_doctor_schedule(doctor):
         """
         Get doctor's current schedule.
-        Returns:
-            QuerySet of DoctorAvailability objects
         """
         try:
             return DoctorAvailability.objects.filter(doctor=doctor).order_by('day_of_week')

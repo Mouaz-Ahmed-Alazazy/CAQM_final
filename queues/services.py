@@ -21,15 +21,6 @@ class CheckInService:
     def parse_qr_code(qr_data):
         """
         Parse QR code data to extract doctor_id and date.
-        
-        Expected format: QUEUE-{doctor_id}-{YYYYMMDD}
-        Example: QUEUE-5-20251202
-        
-        Args:
-            qr_data (str): QR code data string
-            
-        Returns:
-            tuple: (doctor_id, date) or (None, None) if invalid
         """
         try:
             parts = qr_data.strip().split('-')
@@ -54,14 +45,31 @@ class CheckInService:
     def verify_patient_appointment(patient, doctor, date):
         """
         Verify that the patient has a scheduled appointment with the doctor on the given date.
-        
-        Args:
-            patient (Patient): Patient instance
-            doctor (Doctor): Doctor instance
-            date (date): Appointment date
-            
-        Returns:
-            Appointment or None: The appointment if found and valid, None otherwise
+        """
+        try:
+            appointment = Appointment.objects.get(
+                patient=patient,
+                doctor=doctor,
+                appointment_date=date,
+                status='SCHEDULED'
+            )
+            return appointment
+        except Appointment.DoesNotExist:
+            logger.warning(f"No scheduled appointment found for patient {patient.pk} with doctor {doctor.pk} on {date}")
+            return None
+        except Appointment.MultipleObjectsReturned:
+            logger.error(f"Multiple appointments found for patient {patient.pk} with doctor {doctor.pk} on {date}")
+            return Appointment.objects.filter(
+                patient=patient,
+                doctor=doctor,
+                appointment_date=date,
+                status='SCHEDULED'
+            ).first()
+    
+    @staticmethod
+    def verify_doctor_consultation(doctor, date):
+        """
+        Verify that the doctor has scheduled consultations (appointments) on the given date.
         """
         try:
             appointment = Appointment.objects.get(
@@ -88,14 +96,7 @@ class CheckInService:
     @staticmethod
     def verify_doctor_consultation(doctor, date):
         """
-        Verify that the doctor has scheduled consultations (appointments) on the given date.
-        
-        Args:
-            doctor (Doctor): Doctor instance
-            date (date): Consultation date
-            
-        Returns:
-            bool: True if doctor has appointments, False otherwise
+        Verify that the doctor has scheduled consultations (appointments) on the given date.    
         """
         has_consultations = Appointment.objects.filter(
             doctor=doctor,
@@ -112,14 +113,6 @@ class CheckInService:
     def check_in_patient(patient, queue, appointment):
         """
         Check in a patient by adding them to the queue.
-        
-        Args:
-            patient (Patient): Patient instance
-            queue (Queue): Queue instance
-            appointment (Appointment): Patient's appointment
-            
-        Returns:
-            tuple: (success: bool, message: str, patient_queue: PatientQueue or None)
         """
         try:
             # Check if patient is already in the queue
@@ -155,14 +148,6 @@ class CheckInService:
     def check_in_doctor(doctor, queue, date):
         """
         Check in a doctor by updating all their appointments for the day to CHECKED_IN.
-        
-        Args:
-            doctor (Doctor): Doctor instance
-            queue (Queue): Queue instance
-            date (date): Consultation date
-            
-        Returns:
-            tuple: (success: bool, message: str, appointments_count: int)
         """
         try:
             # Get all scheduled appointments for the doctor on this date
@@ -193,13 +178,6 @@ class CheckInService:
         """
         Main entry point for processing check-in from QR code.
         Determines user type (patient/doctor) and calls appropriate method.
-        
-        Args:
-            user (User): Logged-in user
-            qr_data (str): QR code data
-            
-        Returns:
-            dict: Response with success status, message, and additional data
         """
         # Parse QR code
         doctor_id, date = CheckInService.parse_qr_code(qr_data)

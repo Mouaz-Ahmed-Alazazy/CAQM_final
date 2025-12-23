@@ -21,19 +21,6 @@ class AdminService:
     def register_user(email, password, first_name, last_name, phone, role, **kwargs):
         """
         Register a new user (Patient, Doctor, or Admin).
-        Follows sequence diagram: register_user -> create_user -> create_profile -> send_notification
-        
-        Args:
-            email: User email
-            password: User password
-            first_name: First name
-            last_name: Last name
-            phone: Phone number
-            role: User role ('PATIENT', 'DOCTOR', 'ADMIN')
-            **kwargs: Additional fields (specialization for doctor, etc.)
-            
-        Returns:
-            Tuple (success: bool, user_or_error: User/str)
         """
         try:
             # Validate password
@@ -86,12 +73,6 @@ class AdminService:
     def get_all_users(role=None):
         """
         Get all users, optionally filtered by role.
-        
-        Args:
-            role: Filter by role (optional)
-            
-        Returns:
-            QuerySet of User objects
         """
         try:
             queryset = User.objects.all().order_by('-date_joined')
@@ -108,12 +89,6 @@ class AdminService:
     def delete_user(user_id):
         """
         Delete a user.
-        
-        Args:
-            user_id: ID of user to delete
-            
-        Returns:
-            Tuple (success: bool, message: str)
         """
         try:
             user = User.objects.get(pk=user_id)

@@ -14,8 +14,6 @@ class PatientFormService:
     def submit_form(patient, chief_complaint, medical_history='', current_medications='', allergies=''):
         """
         Submit a patient medical form.
-        Returns:
-            Tuple (success: bool, form_or_error: PatientForm/str)
         """
         try:
             form = PatientForm.objects.create(
@@ -35,8 +33,6 @@ class PatientFormService:
     def get_patient_forms(patient):
         """
         Get all forms submitted by a patient.
-        Returns:
-            QuerySet of PatientForm objects
         """
         try:
             return PatientForm.objects.filter(patient=patient).order_by('-submitted_at')
