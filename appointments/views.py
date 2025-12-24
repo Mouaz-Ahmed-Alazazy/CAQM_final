@@ -1,8 +1,4 @@
-"""
-Views for the appointments app.
-Only contains shared views like GetAvailableSlotsView.
-Patient and Doctor views have been moved to their respective apps.
-"""
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import View
 from django.http import JsonResponse

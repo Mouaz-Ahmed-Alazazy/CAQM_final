@@ -1,8 +1,3 @@
-"""
-URL configuration for the appointments app.
-Only contains shared URLs like available-slots.
-Patient and Doctor URLs have been moved to their respective apps.
-"""
 from django.urls import path
 from .views import GetAvailableSlotsView
 

@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 from .models import Appointment, DoctorAvailability
+from .appointment_creators import ScheduledAppointmentCreator, WalkInAppointmentCreator
 
 from .config import SingletonConfig
 from doctors.models import Doctor
@@ -39,15 +40,31 @@ class AppointmentService:
     
     @staticmethod
     @transaction.atomic
-    def book_appointment(patient, doctor, appointment_date, start_time, notes=''):
+    def book_appointment(patient, doctor, appointment_date, start_time, notes='', is_walk_in=False):
         """
-        Book an appointment (with atomic transaction).
+        Book an appointment using Factory Method pattern.
+        
+        Args:
+            patient: Patient model instance
+            doctor: Doctor model instance
+            appointment_date: Date of the appointment
+            start_time: Start time of the appointment
+            notes: Optional notes for the appointment
+            is_walk_in: If True, creates a walk-in appointment (immediately checked in)
+            
+        Returns:
+            Tuple of (success: bool, appointment or error message)
         """
         try:
-            # Create appointment using Factory
-            # Create appointment instance
+            # Select appropriate creator based on appointment type (Factory Method)
+            if is_walk_in:
+                creator = WalkInAppointmentCreator()
+            else:
+                creator = ScheduledAppointmentCreator()
+            
+            # Use factory method to create appointment
             try:
-                appointment = AppointmentService.create_appointment_instance(
+                appointment = creator.create_product(
                     patient=patient,
                     doctor=doctor,
                     appointment_date=appointment_date,
@@ -172,37 +189,7 @@ class AppointmentService:
             logger.error(f"Error getting patient appointments: {e}")
             return Appointment.objects.none()
 
-    @staticmethod
-    def create_appointment_instance(patient, doctor, appointment_date, start_time, notes=''):
-        """
-        Create and return an Appointment instance (unsaved).
-        validates availability and calculates end time.
-        """
-        # Calculate end time based on slot duration
-        day_of_week = appointment_date.strftime('%A').upper()
-        availability = DoctorAvailability.objects.filter(
-            doctor=doctor,
-            day_of_week=day_of_week,
-            is_active=True
-        ).first()
-        
-        if not availability:
-            raise ValueError('Doctor is not available on this day')
-        
-        start_datetime = datetime.combine(appointment_date, start_time)
-        end_datetime = start_datetime + timedelta(minutes=availability.slot_duration)
-        end_time = end_datetime.time()
-        
-        # Create appointment instance
-        return Appointment(
-            patient=patient,
-            doctor=doctor,
-            appointment_date=appointment_date,
-            start_time=start_time,
-            end_time=end_time,
-            notes=notes,
-            status='SCHEDULED'
-        )
+
 
 
 
